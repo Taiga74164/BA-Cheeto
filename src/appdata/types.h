@@ -3,6 +3,8 @@
 #include "enums.h"
 #include "types-helper.h"
 
+using UTYPE = UnityResolve::UnityType;
+
 ///////////////////////////////
 /// All Forward Declarations
 ///////////////////////////////
@@ -77,7 +79,7 @@ class BattleEntity
 
     UNITY_FIELD(void*, Damaged, 0x28)  // EventHandler<BattleEntityDamagedEventArgs>
     UNITY_FIELD(TacticEntityType_Enum, TacticEntityType, 0x38)
-    UNITY_FIELD(UnityResolve::UnityType::String*, Name, 0x58)
+    UNITY_FIELD(UTYPE::String*, Name, 0x58)
     UNITY_FIELD(int64_t, HitPoint, 0x78)
     UNITY_FIELD(int64_t, HitPointBefore, 0x80)
     UNITY_FIELD(int64_t, MaxHPCapGauge, 0x88)
@@ -178,7 +180,7 @@ class LogicEffectProcessor
 {
     UNITY_CLASS_DECL_FROM_FIELD_NAME("BlueArchive.dll", "CrowdControlGaugeEffect", "logicEffectProcessor")
 
-    UNITY_FIELD(UnityResolve::UnityType::List<LogicEffect>*, logicEffects, 0x48)
+    UNITY_FIELD(UTYPE::List<LogicEffect>*, logicEffects, 0x48)
 };
 
 class Battle
@@ -333,13 +335,13 @@ class NewSkillAction : public HeroAction
     UNITY_FIELD(int64_t, Angle, 0x128)
     UNITY_FIELD(int64_t, MinRange, 0x130)
     UNITY_FIELD(SpawnDirectionTypes_Enum, ExecuterDirectionType, 0x138)
-    UNITY_FIELD(UnityResolve::UnityType::Vector2, ExecuterDirectionWorldPosition, 0x13C)
+    UNITY_FIELD(UTYPE::Vector2, ExecuterDirectionWorldPosition, 0x13C)
     UNITY_FIELD(SpawnDirectionTypes_Enum, CurrentInvokerDirectionType, 0x144)
-    UNITY_FIELD(UnityResolve::UnityType::Vector2, CurrentInvokerDirectionWorldPosition, 0x148)
+    UNITY_FIELD(UTYPE::Vector2, CurrentInvokerDirectionWorldPosition, 0x148)
     // UNITY_FIELD(SkillEntityDAO*, MainEntityData, 0x150)
     UNITY_FIELD(bool, IsAttackEnterSkipByLastSkill, 0x160)
-    UNITY_FIELD(UnityResolve::UnityType::Vector2, RootMotionStartPosition, 0x164)
-    UNITY_FIELD(UnityResolve::UnityType::Vector2, RootMotionEndPosition, 0x16C)
+    UNITY_FIELD(UTYPE::Vector2, RootMotionStartPosition, 0x164)
+    UNITY_FIELD(UTYPE::Vector2, RootMotionEndPosition, 0x16C)
     UNITY_FIELD(bool, ignoreCrashByTSSObstacleCheck, 0x174)
 };
 

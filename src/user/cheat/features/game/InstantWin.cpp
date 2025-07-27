@@ -15,6 +15,8 @@ namespace cheat::features
     {
         if (s_instance->isEnabled())
         {
+            _this->BattleSummary_()->Winner(GroupTag_Enum::Group01);
+            _this->BattleSummary_()->EndType(BattleEndType_Enum::Clear);
             _this->BattleSummary_()->EndFrame(0);
             _this->BattleSummary_()->ElapsedRealtime(0.f);
 
