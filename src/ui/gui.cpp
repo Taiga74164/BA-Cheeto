@@ -3,6 +3,7 @@
 #include "language.h"
 #include "pch.h"
 #include "user/cheat/FeatureManager.h"
+#include "core/rendering/renderer.h"
 
 GUI::GUI() { setupImGuiStyle(); }
 
@@ -73,14 +74,28 @@ void GUI::renderMainMenuBar()
                     {
                         LOG_INFO("[GUI] Switching to English");
                         SWITCH_LANG(LanguageType::English);
+                        
+                        // 切换字体
+                        auto& renderer = Renderer::getInstance();
+                        if (renderer.isInitialized() && renderer.getBackend())
+                        {
+                            renderer.getBackend()->switchFont();
+                        }
                     }
                 }
-                if (ImGui::MenuItem(LANG("简体中文"), nullptr, currentLang == LanguageType::Chinese))
+                if (ImGui::MenuItem(LANG("Chinese"), nullptr, currentLang == LanguageType::Chinese))
                 {
                     if (currentLang != LanguageType::Chinese)
                     {
                         LOG_INFO("[GUI] Switching to Chinese");
                         SWITCH_LANG(LanguageType::Chinese);
+                        
+                        // 切换字体
+                        auto& renderer = Renderer::getInstance();
+                        if (renderer.isInitialized() && renderer.getBackend())
+                        {
+                            renderer.getBackend()->switchFont();
+                        }
                     }
                 }
 
