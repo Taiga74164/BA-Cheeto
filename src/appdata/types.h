@@ -25,6 +25,7 @@ class DamageResult;
 class HeroAction;
 class NewSkillAction;
 class NewNormalAttackAction;
+class Screen;
 
 ///////////////////////////////
 /// Class Definitions
@@ -76,7 +77,7 @@ class BattleEntity
 {
     UNITY_CLASS_DECL("BlueArchive.dll", "BattleEntity")
 
-    UNITY_FIELD(void*, Damaged, 0x28) // EventHandler<BattleEntityDamagedEventArgs>
+    UNITY_FIELD(void*, Damaged, 0x28)  // EventHandler<BattleEntityDamagedEventArgs>
     UNITY_FIELD(TacticEntityType_Enum, TacticEntityType, 0x38)
     UNITY_FIELD(UTYPE::String*, Name, 0x58)
     UNITY_FIELD(int64_t, HitPoint, 0x78)
@@ -371,4 +372,16 @@ class NewNormalAttackAction : public NewSkillAction
     UNITY_FIELD(SpawnDirectionTypes_Enum, exclusiveIngInvokerDirectionOverride, 0x1FC)
 
     UNITY_METHOD(void, Update, NewNormalAttackAction*, Battle*)
+};
+
+
+class Screen 
+{
+    UNITY_CLASS_DECL("UnityEngine.CoreModule.dll", "Screen")
+
+    
+        //System.Void UnityEngine.Screen::SetResolution(System.Int32, System.Int32, System.Boolean)
+    //UNITY_FIELD()
+
+        UNITY_METHOD(void, SetResolution, int,int,bool)
 };

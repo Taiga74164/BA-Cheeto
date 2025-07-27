@@ -25,6 +25,9 @@ public:
     // Handle input messages
     virtual int onInput(UINT msg, WPARAM wParam, LPARAM lParam) = 0; // TODO: It's probably the same for all backends
 
+    // 字体切换功能
+    virtual void switchFont() = 0;
+
 protected:
     // Called when ImGui should be rendered
     virtual void renderImGui() = 0;

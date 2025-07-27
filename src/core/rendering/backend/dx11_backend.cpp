@@ -5,7 +5,9 @@
 #include <imgui_impl_win32.h>
 
 #include "core/rendering/fonts/NotoSans.hpp"
+#include "core/rendering/fonts/HyWenHei.hpp"
 #include "ui/gui.h"
+#include "ui/language.h"
 #include "utils/dx_utils.h"
 
 DX11Backend* DX11Backend::s_instance = nullptr;
@@ -21,6 +23,8 @@ DX11Backend::DX11Backend()
     , m_swapChain(nullptr)
     , m_renderTargetView(nullptr)
     , m_window(nullptr)
+    , m_englishFont(nullptr)
+    , m_chineseFont(nullptr)
 {
     assert(s_instance == nullptr);
     s_instance = this;
@@ -245,13 +249,38 @@ bool DX11Backend::initializeImGui()
     ImFontConfig fontConfig;
     fontConfig.FontDataOwnedByAtlas = false;
 
-    io.FontDefault = io.Fonts->AddFontFromMemoryCompressedTTF(
+    // 加载英文字体
+    m_englishFont = io.Fonts->AddFontFromMemoryCompressedTTF(
         NotoSans_compressed_data,
         *NotoSans_compressed_data,
         15.0f,
         &fontConfig,
         io.Fonts->GetGlyphRangesDefault()
-        );
+    );
+
+    // 加载中文字体
+    m_chineseFont = io.Fonts->AddFontFromMemoryCompressedTTF(
+        HYWenHei_compressed_data, 
+        *HYWenHei_compressed_data,
+        15.0f, 
+        &fontConfig, 
+        io.Fonts->GetGlyphRangesChineseFull()
+    );
+
+    // 根据当前语言设置默认字体
+    auto& language = Language::getInstance();
+    switch (language.getCurrentLanguage())
+    {
+        case LanguageType::English:
+            io.FontDefault = m_englishFont;
+            break;
+        case LanguageType::Chinese:
+            io.FontDefault = m_chineseFont;
+            break;
+        default:
+            io.FontDefault = m_englishFont;
+            break;
+    }
 
     // Setup style
     ImGui::StyleColorsDark();
@@ -366,4 +395,30 @@ int DX11Backend::onInput(UINT msg, WPARAM wParam, LPARAM lParam)
 
     // TODO: Handle input.
     return 0;
+}
+
+
+
+void DX11Backend::switchFont()
+{
+    if (!m_imguiInitialized) return;
+
+    ImGuiIO& io = ImGui::GetIO();
+    
+    // 根据当前语言设置字体
+    auto& language = Language::getInstance();
+    switch (language.getCurrentLanguage())
+    {
+        case LanguageType::English:
+            io.FontDefault = m_englishFont;
+            break;
+        case LanguageType::Chinese:
+            io.FontDefault = m_chineseFont;
+            break;
+        default:
+            io.FontDefault = m_englishFont;
+            break;
+    }
+    
+    LOG_INFO("[DX11Backend] Font switched for language change");
 }

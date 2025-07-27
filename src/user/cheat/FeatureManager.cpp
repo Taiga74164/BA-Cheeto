@@ -11,8 +11,8 @@ namespace cheat
 
     void FeatureManager::registerFeature(std::unique_ptr<FeatureBase> feature)
     {
-        const std::string& name = feature->getName();
-        m_featureMap[name] = feature.get();
+        const std::string& nameKey = feature->getNameKey();
+        m_featureMap[nameKey] = feature.get();
         m_features.push_back(std::move(feature));
     }
 
@@ -82,9 +82,9 @@ namespace cheat
         }
     }
 
-    FeatureBase* FeatureManager::getFeature(const std::string& name)
+    FeatureBase* FeatureManager::getFeature(const std::string& nameKey)
     {
-        const auto it = m_featureMap.find(name);
+        const auto it = m_featureMap.find(nameKey);
         return it != m_featureMap.end() ? it->second : nullptr;
     }
 
@@ -106,15 +106,17 @@ namespace cheat
         switch (section)
         {
             case FeatureSection::Player:
-                return "Player";
+                return LANG("Player");
             case FeatureSection::Combat:
-                return "Combat";
+                return LANG("Combat");
             case FeatureSection::Game:
-                return "Game";
+                return LANG("Game");
+            case FeatureSection::Visual:
+                return LANG("Viaual");
             case FeatureSection::Settings:
-                return "Settings";
+                return LANG("Settings");
             case FeatureSection::Debug:
-                return "Debug";
+                return ("Debug");
             case FeatureSection::Hooks:
             case FeatureSection::Count:
             default:

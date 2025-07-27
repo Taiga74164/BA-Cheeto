@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "utils/singleton.h"
+#include "../../ui/language.h"
 
 namespace cheat
 {
@@ -9,6 +10,7 @@ namespace cheat
         Player,
         Combat,
         Game,
+        Visual,
         Settings,
         Debug,
         Hooks,
@@ -18,9 +20,9 @@ namespace cheat
     class FeatureBase
     {
     public:
-        FeatureBase(const std::string& name, const std::string& description, FeatureSection section)
-            : m_name(name)
-            , m_description(description)
+        FeatureBase(const std::string& nameKey, const std::string& descriptionKey, FeatureSection section)
+            : m_nameKey(nameKey)
+            , m_descriptionKey(descriptionKey)
             , m_section(section)
             , m_enabled(false)
             , m_allowDraw(section != FeatureSection::Hooks && section != FeatureSection::Count)
@@ -47,8 +49,22 @@ namespace cheat
             LOG_INFO("%s disabled", getName().c_str());
         }
 
-        const std::string& getName() const { return m_name; }
-        const std::string& getDescription() const { return m_description; }
+        // 动态获取翻译后的名称
+        std::string getName() const 
+        { 
+            return TR(m_nameKey.c_str()); 
+        }
+        
+        // 动态获取翻译后的描述
+        std::string getDescription() const 
+        { 
+            return TR(m_descriptionKey.c_str()); 
+        }
+        
+        // 获取翻译键（用于内部查找）
+        const std::string& getNameKey() const { return m_nameKey; }
+        const std::string& getDescriptionKey() const { return m_descriptionKey; }
+
         FeatureSection getSection() const { return m_section; }
         bool isEnabled() const { return m_enabled; }
 
@@ -71,8 +87,8 @@ namespace cheat
         bool isAllowDraw() const { return m_allowDraw; }
 
     protected:
-        std::string m_name;
-        std::string m_description;
+        std::string m_nameKey;      
+        std::string m_descriptionKey; 
         FeatureSection m_section;
         bool m_enabled;
         bool m_allowDraw;

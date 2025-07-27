@@ -17,6 +17,9 @@ public:
     void onResize(int width, int height) override;
     int onInput(UINT msg, WPARAM wParam, LPARAM lParam) override;
 
+    // 简单的字体切换功能
+    void switchFont();
+
 protected:
     void renderImGui() override;
     void beginFrame() override;
@@ -48,6 +51,10 @@ private:
     IDXGISwapChain* m_swapChain;
     ID3D11RenderTargetView* m_renderTargetView;
     HWND m_window;
+
+    // 字体相关
+    ImFont* m_englishFont;
+    ImFont* m_chineseFont;
 
     // Window procedure hook
     static WNDPROC m_originalWndProc;

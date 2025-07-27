@@ -21,3 +21,4 @@
 #include "ui/gui.h"
 #include "appdata/helpers.h"
 #include "appdata/types.h"
+#include "ui/language.h"
