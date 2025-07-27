@@ -1,12 +1,10 @@
-﻿#include "pch.h"
-#include "gui.h"
+﻿#include "gui.h"
 
+#include "language.h"
+#include "pch.h"
 #include "user/cheat/FeatureManager.h"
 
-GUI::GUI()
-{
-    setupImGuiStyle();
-}
+GUI::GUI() { setupImGuiStyle(); }
 
 GUI& GUI::getInstance()
 {
@@ -31,24 +29,21 @@ void GUI::render()
     }
 }
 
-void GUI::showExampleWindow()
-{
-    m_showExample = true;
-}
+void GUI::showExampleWindow() { m_showExample = true; }
 
 void GUI::renderMainMenuBar()
 {
     if (ImGui::BeginMainMenuBar())
     {
-        if (ImGui::BeginMenu("Windows"))
+        if (ImGui::BeginMenu(TR("Windows")))
         {
-            ImGui::MenuItem("Example Window", nullptr, &m_showExample);
+            ImGui::MenuItem(TR("Example Window"), nullptr, &m_showExample);
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Tools"))
+        if (ImGui::BeginMenu(TR("Tools")))
         {
-            if (ImGui::BeginMenu("Theme"))
+            if (ImGui::BeginMenu(TR("Theme")))
             {
                 if (ImGui::MenuItem("Default"))
                 {
@@ -65,6 +60,33 @@ void GUI::renderMainMenuBar()
                 }
                 ImGui::EndMenu();
             }
+            ImGui::Separator();
+            if (ImGui::BeginMenu(LANG("Language")))
+            {
+                // Get current language for comparison
+                LanguageType currentLang = Language::getInstance().getCurrentLanguage();
+
+                // Create radio button style language selection
+                if (ImGui::MenuItem(LANG("English"), nullptr, currentLang == LanguageType::English))
+                {
+                    if (currentLang != LanguageType::English)
+                    {
+                        LOG_INFO("[GUI] Switching to English");
+                        SWITCH_LANG(LanguageType::English);
+                    }
+                }
+                if (ImGui::MenuItem(LANG("简体中文"), nullptr, currentLang == LanguageType::Chinese))
+                {
+                    if (currentLang != LanguageType::Chinese)
+                    {
+                        LOG_INFO("[GUI] Switching to Chinese");
+                        SWITCH_LANG(LanguageType::Chinese);
+                    }
+                }
+
+                ImGui::EndMenu();
+            }
+
 
             ImGui::EndMenu();
         }
@@ -98,7 +120,7 @@ void GUI::renderMainMenuBar()
         ImGui::SameLine();
         ImGui::Separator();
         ImGui::SameLine();
-        ImGui::TextDisabled("INSERT: Toggle GUI");
+        ImGui::TextDisabled(TR("INSERT: Toggle GUI"));
 
         ImGui::EndMainMenuBar();
     }
@@ -118,7 +140,7 @@ void GUI::setupImGuiStyle()
     ImGuiStyle& style = ImGui::GetStyle();
 
     style.WindowMinSize = ImVec2(420, 320);
-    
+
     // Modern rounded corners
     style.WindowRounding = 12.0f;
     style.FrameRounding = 10.0f;
@@ -217,4 +239,3 @@ void GUI::setupImGuiStyle()
     // Modal overlay
     colors[ImGuiCol_ModalWindowDimBg] = ImVec4(0.80f, 0.80f, 0.80f, 0.35f);
 }
-

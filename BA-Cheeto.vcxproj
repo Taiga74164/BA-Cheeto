@@ -11,6 +11,7 @@
     </ProjectConfiguration>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\UnityRuntimeInspector\src\backend\HYWenHei.hpp" />
     <ClInclude Include="src\appdata\enums.h" />
     <ClInclude Include="src\appdata\helpers.h" />
     <ClInclude Include="src\appdata\types-helper.h" />
@@ -19,12 +20,15 @@
     <ClInclude Include="src\core\events\event_manager.h" />
     <ClInclude Include="src\core\rendering\backend\dx11_backend.h" />
     <ClInclude Include="src\core\rendering\backend\renderer_backend.h" />
+    <ClInclude Include="src\core\rendering\fonts\HYWenHei.hpp" />
     <ClInclude Include="src\core\rendering\fonts\NotoSans.hpp" />
     <ClInclude Include="src\core\rendering\renderer.h" />
     <ClInclude Include="src\framework.h" />
     <ClInclude Include="src\memory\hook_manager.h" />
     <ClInclude Include="src\pch.h" />
     <ClInclude Include="src\ui\gui.h" />
+    <ClInclude Include="src\ui\language.h" />
+    <ClInclude Include="src\ui\translations.h" />
     <ClInclude Include="src\user\cheat\cheat.h" />
     <ClInclude Include="src\user\cheat\FeatureBase.h" />
     <ClInclude Include="src\user\cheat\FeatureManager.h" />
@@ -77,6 +81,7 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
     </ClCompile>
     <ClCompile Include="src\ui\gui.cpp" />
+    <ClCompile Include="src\ui\language.cpp" />
     <ClCompile Include="src\user\cheat\cheat.cpp" />
     <ClCompile Include="src\user\cheat\FeatureManager.cpp" />
     <ClCompile Include="src\user\cheat\features\combat\DumbEnemies.cpp" />
@@ -170,11 +175,13 @@
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\obj\</IntDir>
     <TargetName>Cunny</TargetName>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir);$(ProjectDir)\src;$(ProjectDir)\vendor\imgui\backends;$(ProjectDir)\vendor\UnityResolve;$(ProjectDir)\vendor\imgui;$(ProjectDir)\vendor\minhook\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
     <OutDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\</OutDir>
     <IntDir>$(SolutionDir)bin\$(Configuration)-$(Platform)\obj\</IntDir>
     <TargetName>Cunny</TargetName>
+    <IncludePath>$(VC_IncludePath);$(WindowsSDK_IncludePath);$(ProjectDir);$(ProjectDir)\src;$(ProjectDir)\vendor\imgui\backends;$(ProjectDir)\vendor\nano-signal-slot;$(ProjectDir)\vendor\UnityResolve;$(ProjectDir)\vendor\imgui;$(ProjectDir)\vendor\minhook\include;$(IncludePath)</IncludePath>
   </PropertyGroup>
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
     <ClCompile>
@@ -209,6 +216,7 @@
       <AdditionalIncludeDirectories>$(ProjectDir)src;$(ProjectDir)vendor\UnityResolve;$(ProjectDir)vendor\imgui;$(ProjectDir)vendor\imgui\misc;$(ProjectDir)vendor\imgui\backends;$(ProjectDir)vendor\minhook\include;$(ProjectDir)vendor\magic_enum\include\magic_enum;$(ProjectDir)vendor\nano-signal-slot;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <LanguageStandard>stdcpp20</LanguageStandard>
       <LanguageStandard_C>stdc17</LanguageStandard_C>
+      <AdditionalOptions>/utf-8 %(AdditionalOptions)</AdditionalOptions>
     </ClCompile>
     <Link>
       <SubSystem>Windows</SubSystem>

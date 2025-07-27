@@ -18,7 +18,8 @@ namespace cheat
 
         void draw();
 
-        FeatureBase* getFeature(const std::string& name);
+        // 通过翻译键获取特性
+        FeatureBase* getFeature(const std::string& nameKey);
         std::vector<FeatureBase*> getFeaturesBySection(FeatureSection section);
 
     private:

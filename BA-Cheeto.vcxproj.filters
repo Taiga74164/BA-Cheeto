@@ -174,6 +174,21 @@
     <ClInclude Include="src\user\main.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="src\user\cheat\features\game\InstantWin.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\language.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\ui\translations.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\UnityRuntimeInspector\src\backend\HYWenHei.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="src\core\rendering\fonts\HYWenHei.hpp">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="vendor\imgui\imgui.cpp">
@@ -255,6 +270,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="src\user\main.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\user\cheat\features\game\InstantWin.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="src\ui\language.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
