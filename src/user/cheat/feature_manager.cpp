@@ -1,5 +1,8 @@
 ﻿#include "pch.h"
 #include "feature_manager.h"
+#include "utils/config_manager.h"
+#include "utils/hotkey_manager.h"
+#include "features/player/PlayerStats.h"
 
 namespace cheat
 {
@@ -18,12 +21,23 @@ namespace cheat
 
     void FeatureManager::init()
     {
-        LOG_INFO("Initializing {} features...", m_features.size());
+    LOG_INFO("Initializing {} features...", m_features.size());
+    ConfigManager::getInstance().load();
+    // Ensure hotkey IDs exist for all features and load their values
+    {
+        auto& hk = HotkeyManager::getInstance();
+        for (const auto& feature : m_features)
+        {
+            hk.registerHotkey(std::string("feature_") + feature->getName(), 0);
+        }
+        hk.load();
+    }
 
         for (const auto& feature : m_features)
         {
             try
             {
+                feature->setupEnabledField(getSectionName(feature->getSection()));
                 feature->init();
                 LOG_INFO("Feature '{}' initialized successfully", feature->getName().c_str());
             }
@@ -39,6 +53,8 @@ namespace cheat
     {
         if (ImGui::BeginTabBar("FeatureTabs", ImGuiTabBarFlags_None))
         {
+            // (Hotkeys tab removed per request; hotkeys remain per-feature below)
+
             for (auto sectionIdx = 0; sectionIdx < static_cast<int>(FeatureSection::Count); ++sectionIdx)
             {
                 auto section = static_cast<FeatureSection>(sectionIdx);
@@ -67,6 +83,26 @@ namespace cheat
                             helpMarker(feature->getDescription().c_str());
                         }
 
+                        // Per-feature hotkey capture row
+                        {
+                            auto& hk = HotkeyManager::getInstance();
+                            std::string id = std::string("feature_") + feature->getName();
+                            hk.registerHotkey(id, 0);
+                            int current = hk.getVk(id);
+                            ImGui::TextDisabled("Hotkey: [%s]", HotkeyManager::keyName(current)); ImGui::SameLine();
+                            if (!hk.isCapturing())
+                            {
+                                if (ImGui::Button((std::string("Add Hotkey##") + id).c_str())) hk.beginCapture(id);
+                                ImGui::SameLine();
+                                if (current != 0 && ImGui::Button((std::string("Reset##") + id).c_str())) hk.clear(id);
+                            }
+                            else if (hk.captureId() == id)
+                            {
+                                ImGui::TextUnformatted(" Press any key..."); ImGui::SameLine();
+                                if (ImGui::Button("Cancel")) hk.cancelCapture();
+                            }
+                        }
+
                         feature->draw();
 
                         ImGui::Spacing();
@@ -80,6 +116,48 @@ namespace cheat
 
             ImGui::EndTabBar();
         }
+    }
+
+    void FeatureManager::reloadConfig()
+    {
+        // Reload the JSON from disk first
+        ConfigManager::getInstance().load();
+        // Register hotkeys for all features (in case new ones exist), then load
+        {
+            auto& hk = HotkeyManager::getInstance();
+            for (const auto& feature : m_features)
+            {
+                hk.registerHotkey(std::string("feature_") + feature->getName(), 0);
+            }
+            hk.load();
+        }
+        // Reinitialize features to refresh their Config::Field bindings and cached values
+        for (const auto& feature : m_features)
+        {
+            // Reapply enabled flag from config
+            feature->setupEnabledField(getSectionName(feature->getSection()));
+            feature->init();
+            // Hook for features that support explicit reload
+            if (auto* ps = dynamic_cast<cheat::features::PlayerStats*>(feature.get()); ps)
+                ps->reloadFromConfig();
+        }
+    }
+
+    bool FeatureManager::onKeyDown(int vk)
+    {
+        auto& hk = HotkeyManager::getInstance();
+        if (hk.isCapturing()) { hk.setCaptured(vk); return true; }
+        // Feature toggles: feature_<Name>
+        for (const auto& f : m_features)
+        {
+            std::string id = std::string("feature_") + f->getName();
+            if (hk.getVk(id) == vk && vk != 0)
+            {
+                f->setEnabled(!f->isEnabled());
+                return true;
+            }
+        }
+        return false;
     }
 
     FeatureBase* FeatureManager::getFeature(const std::string& name)

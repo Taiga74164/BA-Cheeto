@@ -2,6 +2,8 @@
 
 #include <vector>
 #include <memory>
+#include <unordered_map>
+#include <atomic>
 #include <MinHook.h>
 
 #ifdef _DEBUG
@@ -42,6 +44,10 @@ public:
 
     // Shutdown and cleanup all hooks
     void shutdown();
+
+    // Prevent creating new hooks (used during/after shutdown)
+    void blockNewHooks(bool block = true) { m_blockNewHooks.store(block); }
+    bool isBlocked() const { return m_blockNewHooks.load(); }
 
     // Install hook using direct function pointer
     template <typename T>
@@ -94,6 +100,7 @@ private:
     std::vector<std::unique_ptr<HookInfo>> m_hooks;
     std::unordered_map<void*, void*> m_detourToOriginal;
     bool m_initialized = false;
+    std::atomic_bool m_blockNewHooks{false};
 
     HookInfo* findHook(void* target);
     void* resolveModuleFunction(const std::string& moduleName, intptr_t offset);
@@ -103,6 +110,7 @@ template <typename T>
 bool HookManager::install(T target, T detour)
 {
     auto& instance = getInstance();
+    if (instance.isBlocked()) return false;
     if (!instance.m_initialized && !instance.initialize()) return false;
 
     void* originalPtr = nullptr;
@@ -135,6 +143,7 @@ template <typename T>
 bool HookManager::install(const std::string& moduleName, intptr_t offset, T detour)
 {
     auto& instance = getInstance();
+    if (instance.isBlocked()) return false;
     if (!instance.m_initialized && !instance.initialize()) return false;
 
     void* target = instance.resolveModuleFunction(moduleName, offset);
@@ -168,7 +177,8 @@ bool HookManager::install(const std::string& moduleName, intptr_t offset, T deto
 template <typename T>
 bool HookManager::createHook(void* target, T detour, T* original)
 {
-    if (!m_initialized) return false;
+    if (isBlocked()) return false;
+    if (!m_initialized && !initialize()) return false;
 
     void* originalPtr = nullptr;
     auto status = MH_CreateHook(target, reinterpret_cast<void*>(detour), &originalPtr);
@@ -196,7 +206,8 @@ bool HookManager::createHook(void* target, T detour, T* original)
 template <typename T>
 bool HookManager::createHook(const std::string& moduleName, intptr_t offset, T detour, T* original)
 {
-    if (!m_initialized) return false;
+    if (isBlocked()) return false;
+    if (!m_initialized && !initialize()) return false;
 
     void* target = resolveModuleFunction(moduleName, offset);
     if (!target) return false;

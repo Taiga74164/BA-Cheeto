@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "utils/singleton.h"
+#include "utils/config_field.h"
 
 namespace cheat
 {
@@ -29,9 +30,7 @@ namespace cheat
 
         virtual ~FeatureBase() = default;
 
-        virtual void init()
-        {
-        }
+    virtual void init() { }
 
         virtual void draw()
         {
@@ -57,6 +56,10 @@ namespace cheat
             if (m_enabled != enabled)
             {
                 m_enabled = enabled;
+                if (m_hasEnabledField)
+                {
+                    m_enabledField = m_enabled;
+                }
                 if (m_enabled)
                 {
                     onEnable();
@@ -70,11 +73,23 @@ namespace cheat
 
         bool isAllowDraw() const { return m_allowDraw; }
 
+        // Initialize self-managed enabled field (called by FeatureManager during init)
+        void setupEnabledField(const char* sectionName)
+        {
+            m_enabledField = Config::Field<bool>(sectionName ? sectionName : "Unknown", m_name, "enabled", false);
+            m_hasEnabledField = true;
+            // Apply persisted state without double-saving
+            m_enabled = static_cast<bool>(m_enabledField.get());
+            if (m_enabled) onEnable();
+        }
+
     protected:
         std::string m_name;
         std::string m_description;
         FeatureSection m_section;
         bool m_enabled;
         bool m_allowDraw;
+        bool m_hasEnabledField{false};
+        Config::Field<bool> m_enabledField{};
     };
 }

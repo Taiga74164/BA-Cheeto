@@ -5,9 +5,9 @@
 ---
 
 ## 📝 Usage 
-1. Set steam launch option to `-force-d3d11` (Do this until dx12 backend is implemented)
-2. Launch the game
-3. Use your preferred injector and inject the DLL
+1. Launch the game
+2. Use your preferred injector and inject the DLL
+3. Press F2 to toggle the in-game GUI
 
 ## ✨ Features
 - No Skill Cost
@@ -17,6 +17,16 @@
 - Instant Win
 - Skip Battle Summary
 - Player Stats Editor
+
+### Quality of life
+- Profiles: Tools → Profiles
+    - Create, switch, rename, and delete profiles (default cannot be deleted).
+    - All settings (including hotkeys and player stats) are scoped to the active profile and saved to `%APPDATA%\Cunny\config.<profile>.json`.
+- Hotkeys per feature
+    - Each cheat row shows “Add Hotkey” and “Reset”. Click Add Hotkey, press any key to bind; Reset removes it for that cheat.
+    - Hotkeys are profile-specific and persist automatically.
+- Timescale
+    - Type an exact value into the input box next to the slider (clamped 0.10–10.00).
 
 ## 📚 Resources
 - IDA 9.0 db (script applied)

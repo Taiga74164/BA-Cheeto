@@ -3,6 +3,8 @@
 #include "appdata/types.h"
 #include "memory/hook_manager.h"
 #include <algorithm>
+#include "utils/config_manager.h"
+#include "utils/config_field.h"
 
 namespace cheat::features
 {
@@ -18,12 +20,30 @@ namespace cheat::features
 			HookManager::install(BattleGameTime::Tick(), hBattleGameTime_Tick);
 		}
 
+		inline void init() override
+		{
+			m_scaleField = Config::Field<float>("Game", getName(), "scale", 1.0f);
+			m_scale = m_scaleField.get();
+		}
+
 		inline void draw() override
 		{
+			float prev = m_scale;
 			ImGui::SliderFloat("Scale (x)", &m_scale, 0.1f, 10.0f, "%.2fx");
+			ImGui::SameLine();
+			ImGui::SetNextItemWidth(80.0f);
+			if (ImGui::InputFloat("##scale_input", &m_scale, 0.0f, 0.0f, "%.2f"))
+			{
+				m_scale = std::clamp(m_scale, 0.1f, 10.0f);
+			}
 			ImGui::SameLine();
 			if (ImGui::Button("Reset")) m_scale = 1.0f;
 			ImGui::TextDisabled("Affects battle logic tick; 2.0x ~ twice as fast");
+
+			if (m_scale != prev)
+			{
+				m_scaleField = m_scale;
+			}
 		}
 
 		float getScale() const { return m_scale; }
@@ -55,5 +75,6 @@ namespace cheat::features
 		}
 
 		float m_scale = 1.0f;
+		Config::Field<float> m_scaleField;
 	};
 }

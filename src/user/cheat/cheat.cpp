@@ -50,6 +50,7 @@ void cheat::init()
 void cheat::shutdown()
 {
     auto& hookManager = HookManager::getInstance();
+    hookManager.blockNewHooks(true);
     hookManager.shutdown();
     LOG_INFO("Hooks shutdown successfully");
 }

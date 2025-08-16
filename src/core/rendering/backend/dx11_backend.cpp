@@ -5,8 +5,11 @@
 #include <imgui_impl_win32.h>
 
 #include "core/rendering/fonts/NotoSans.hpp"
+#include "core/rendering/renderer.h"
 #include "ui/gui.h"
 #include "utils/dx_utils.h"
+#include "utils/hotkey_manager.h"
+#include "user/cheat/feature_manager.h"
 
 DX11Backend* DX11Backend::s_instance = nullptr;
 DX11Backend::Present_t DX11Backend::m_originalPresent = nullptr;
@@ -72,15 +75,10 @@ LRESULT CALLBACK DX11Backend::hookedWndProc(HWND hWnd, UINT uMsg, WPARAM wParam,
     if (uMsg == WM_KEYDOWN)
     {
         GUI& gui = GUI::getInstance();
-
-        switch (wParam)
-        {
-            case VK_INSERT:
-                gui.setVisible(!gui.isVisible());
-                return true;
-            default:
-                break;
-        }
+    auto& hotkeys = HotkeyManager::getInstance();
+    if (cheat::FeatureManager::getInstance().onKeyDown((int)wParam)) return true;
+    const int toggle = VK_F2;
+        if ((int)wParam == toggle) { gui.setVisible(!gui.isVisible()); return true; }
     }
 
     // TODO: Handle hotkeys later properly
@@ -169,7 +167,7 @@ HRESULT WINAPI DX11Backend::hookedPresent(IDXGISwapChain* swapChain, UINT syncIn
         }
     }
 
-    if (s_instance && s_instance->m_imguiInitialized)
+    if (s_instance && s_instance->m_imguiInitialized && Renderer::getInstance().isInitialized())
     {
         s_instance->beginFrame();
         s_instance->renderImGui();
@@ -276,7 +274,7 @@ void DX11Backend::shutdownImGui()
 
 void DX11Backend::beginFrame()
 {
-    if (!m_imguiInitialized) return;
+    if (!m_imguiInitialized || !m_context) return;
 
     ImGui_ImplDX11_NewFrame();
     ImGui_ImplWin32_NewFrame();
@@ -285,7 +283,7 @@ void DX11Backend::beginFrame()
 
 void DX11Backend::endFrame()
 {
-    if (!m_imguiInitialized) return;
+    if (!m_imguiInitialized || !m_context || !m_renderTargetView) return;
 
     ImGui::EndFrame();
     ImGui::Render();

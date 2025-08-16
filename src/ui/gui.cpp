@@ -2,6 +2,19 @@
 #include "gui.h"
 
 #include "user/cheat/feature_manager.h"
+#include "user/main.h"
+#include "utils/config_manager.h"
+#include "utils/hotkey_manager.h"
+#include <atomic>
+#include <filesystem>
+#include <shellapi.h>
+std::atomic_bool GUI::s_softUninjectRequested{ false };
+
+void GUI::requestSoftUninject() { s_softUninjectRequested.store(true); }
+bool GUI::isSoftUninjectRequested() { return s_softUninjectRequested.load(); }
+void GUI::clearSoftUninjectRequest() { s_softUninjectRequested.store(false); }
+
+extern HMODULE g_hModule;
 
 GUI::GUI()
 {
@@ -29,6 +42,19 @@ void GUI::render()
     {
         renderExampleWindow();
     }
+
+    // Defer shutdown until after UI finished for this frame
+    if (isSoftUninjectRequested())
+    {
+        // Hide GUI to prevent any further drawing
+        m_visible = false;
+        clearSoftUninjectRequest();
+        // Trigger shutdown on a detached thread a bit later to be safely outside Present
+        std::thread([](){
+            std::this_thread::sleep_for(std::chrono::milliseconds(200));
+            Main::shutdown();
+        }).detach();
+    }
 }
 
 void GUI::showExampleWindow()
@@ -46,7 +72,7 @@ void GUI::renderMainMenuBar()
             ImGui::EndMenu();
         }
 
-        if (ImGui::BeginMenu("Tools"))
+    if (ImGui::BeginMenu("Tools"))
         {
             if (ImGui::BeginMenu("Theme"))
             {
@@ -66,6 +92,104 @@ void GUI::renderMainMenuBar()
                 ImGui::EndMenu();
             }
 
+            ImGui::Separator();
+            // Profiles
+            if (ImGui::BeginMenu("Profiles"))
+            {
+                auto profiles = ConfigManager::getInstance().listProfiles();
+                for (auto& p : profiles)
+                {
+                    bool sel = (p == ConfigManager::getInstance().getProfile());
+                    if (ImGui::MenuItem(p.c_str(), nullptr, sel))
+                    {
+                        ConfigManager::getInstance().setProfile(p);
+                        cheat::FeatureManager::getInstance().reloadConfig();
+                    }
+                    // Context menu for rename/delete
+                    if (ImGui::BeginPopupContextItem((std::string("profile_ctx_") + p).c_str()))
+                    {
+                        static char renameBuf[64] = {0};
+                        ImGui::InputTextWithHint("##rename", "new name", renameBuf, sizeof(renameBuf));
+                        if (ImGui::Button("Rename") && renameBuf[0] != '\0')
+                        {
+                            auto base = std::filesystem::path(ConfigManager::getInstance().getConfigFilePath()).parent_path();
+                            std::string oldFile = (p == "default") ? (base / "config.json").string()
+                                                                      : (base / (std::string("config.") + p + ".json")).string();
+                            std::string newFile = (std::string(renameBuf) == "default") ? (base / "config.json").string()
+                                                                                         : (base / (std::string("config.") + renameBuf + ".json")).string();
+                            std::error_code ec;
+                            std::filesystem::rename(oldFile, newFile, ec);
+                            if (!ec)
+                            {
+                                if (p == ConfigManager::getInstance().getProfile())
+                                {
+                                    ConfigManager::getInstance().setProfile(renameBuf);
+                                    cheat::FeatureManager::getInstance().reloadConfig();
+                                }
+                            }
+                            renameBuf[0] = '\0';
+                            ImGui::CloseCurrentPopup();
+                        }
+                        if (p == "default")
+                        {
+                            ImGui::BeginDisabled();
+                            ImGui::Button("Delete");
+                            ImGui::EndDisabled();
+                        }
+                        else if (ImGui::Button("Delete"))
+                        {
+                            auto base = std::filesystem::path(ConfigManager::getInstance().getConfigFilePath()).parent_path();
+                            auto file = (p == "default") ? (base / "config.json").string()
+                                                          : (base / (std::string("config.") + p + ".json")).string();
+                            std::error_code ec; std::filesystem::remove(file, ec);
+                            if (p == ConfigManager::getInstance().getProfile())
+                            {
+                                ConfigManager::getInstance().setProfile("default");
+                                cheat::FeatureManager::getInstance().reloadConfig();
+                            }
+                            ImGui::CloseCurrentPopup();
+                        }
+                        ImGui::EndPopup();
+                    }
+                }
+                ImGui::Separator();
+                static char newProfile[64] = {0};
+                ImGui::InputTextWithHint("##newprofile", "new profile name", newProfile, sizeof(newProfile));
+                ImGui::SameLine();
+                if (ImGui::Button("Create") && newProfile[0] != '\0')
+                {
+                    if (ConfigManager::getInstance().createProfile(newProfile))
+                    {
+                        ConfigManager::getInstance().setProfile(newProfile);
+                    }
+                    newProfile[0] = '\0';
+                }
+                ImGui::EndMenu();
+            }
+
+            if (ImGui::MenuItem("Save now"))
+                (void)ConfigManager::getInstance().saveNow();
+
+            if (ImGui::MenuItem("Open config folder"))
+            {
+                auto path = std::filesystem::path(ConfigManager::getInstance().getConfigFilePath()).parent_path();
+                ShellExecuteA(nullptr, "open", path.string().c_str(), nullptr, nullptr, SW_SHOWNORMAL);
+            }
+
+            if (ImGui::MenuItem("Reset all to defaults"))
+            {
+                ConfigManager::getInstance().resetAll();
+                ConfigManager::getInstance().save();
+                cheat::FeatureManager::getInstance().reloadConfig();
+            }
+
+            // Hotkeys submenu removed; per-feature hotkeys are shown inline under each cheat.
+            if (ImGui::MenuItem("Uninject (soft)", "", false, true))
+            {
+                // Request a deferred shutdown outside of the current ImGui frame/present
+                GUI::requestSoftUninject();
+            }
+
             ImGui::EndMenu();
         }
 
@@ -81,24 +205,29 @@ void GUI::renderMainMenuBar()
         if (fps >= 60.0f)
         {
             ImGui::SameLine();
-            ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.2f, 1.0f), "●");
+            ImGui::TextColored(ImVec4(0.2f, 0.8f, 0.2f, 1.0f), "o");
         }
         else if (fps >= 30.0f)
         {
             ImGui::SameLine();
-            ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.2f, 1.0f), "●");
+            ImGui::TextColored(ImVec4(0.8f, 0.8f, 0.2f, 1.0f), "o");
         }
         else
         {
             ImGui::SameLine();
-            ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.2f, 1.0f), "●");
+            ImGui::TextColored(ImVec4(0.8f, 0.2f, 0.2f, 1.0f), "o");
         }
 
-        // Controls hint
+    // Controls hint
         ImGui::SameLine();
         ImGui::Separator();
         ImGui::SameLine();
-        ImGui::TextDisabled("INSERT: Toggle GUI");
+    ImGui::TextDisabled("F2: Toggle GUI");
+
+    ImGui::SameLine();
+    ImGui::Separator();
+    ImGui::SameLine();
+    ImGui::TextDisabled("Profile: %s", ConfigManager::getInstance().getProfile().c_str());
 
         ImGui::EndMainMenuBar();
     }

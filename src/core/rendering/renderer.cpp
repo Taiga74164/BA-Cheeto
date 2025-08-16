@@ -2,7 +2,7 @@
 #include "renderer.h"
 
 #include "backend/dx11_backend.h"
-// #include "backend/dx12_backend.h"
+#include "backend/dx12_backend.h"
 
 Renderer& Renderer::getInstance()
 {
@@ -77,8 +77,7 @@ std::unique_ptr<IRendererBackend> Renderer::createBackend(RenderAPI api)
         case RenderAPI::DirectX11:
             return std::make_unique<DX11Backend>();
         case RenderAPI::DirectX12:
-            // TODO: Implement DirectX12 backend
-            return nullptr;
+            return std::make_unique<DX12Backend>();
         default:
             return nullptr;
     }

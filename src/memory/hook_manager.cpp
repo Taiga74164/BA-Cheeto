@@ -26,12 +26,18 @@ bool HookManager::initialize()
 void HookManager::shutdown()
 {
     if (!m_initialized) return;
+    m_blockNewHooks.store(true);
 
-    disableAllHooks();
+    // Best-effort disable all, then remove each explicitly
+    (void)disableAllHooks();
 
     for (auto& hook : m_hooks)
     {
-        MH_RemoveHook(hook->target);
+        if (hook->target)
+        {
+            MH_DisableHook(hook->target);
+            MH_RemoveHook(hook->target);
+        }
     }
 
     MH_Uninitialize();
